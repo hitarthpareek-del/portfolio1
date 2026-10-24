@@ -1,0 +1,99 @@
+:root {
+  /* UI-UX-Pro-Max Architectural Light Theme Palette */
+  --bg-canvas: #f4f2ec;
+  --bg-surface: #faf9f5;
+  --bg-elevated: #ffffff;
+  --bg-card: #ffffff;
+  --bg-subtle: #efede6;
+
+  --border-hairline: #dfdcd2;
+  --border-subtle: #e9e6de;
+  --border-hover: #0f172a;
+
+  /* High-Contrast Editorial Ink Hierarchy (WCAG AAA/AA) */
+  --ink-primary: #0f172a;
+  --ink-secondary: #334155;
+  --ink-muted: #64748b;
+  --ink-light: #94a3b8;
+
+  /* Commercial & Conversion Accents */
+  --accent-emerald: #059669;
+  --accent-emerald-bright: #10b981;
+  --accent-emerald-bg: rgba(5, 150, 105, 0.09);
+  --accent-cobalt: #2563eb;
+  --accent-cobalt-bg: rgba(37, 99, 235, 0.08);
+  --accent-crimson: #e11d48;
+  --accent-crimson-bg: rgba(225, 29, 72, 0.06);
+
+  --shadow-sm: 0 4px 14px -2px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 18px 40px -12px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 28px 65px -15px rgba(15, 23, 42, 0.13);
+
+  --font-heading: 'Schibsted Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'DM Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Inter', 'Schibsted Grotesk', sans-serif;
+
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--bg-canvas);
+  color: var(--ink-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--bg-canvas);
+  color: var(--ink-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.45;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* Custom Light Architectural Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f4f2ec;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
