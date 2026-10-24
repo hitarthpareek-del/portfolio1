@@ -24,6 +24,7 @@ function App() {
   const [selectedProject, setSelectedProject] = useState(null)
   const [projectLayout, setProjectLayout] = useState('stagger') // 'stagger' | 'grid'
   const [categoryFilter, setCategoryFilter] = useState('ALL')
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   // Multi-image switcher per project card (0 = primary image, 1 = secondary image)
   const [activeScreens, setActiveScreens] = useState({})
@@ -48,10 +49,12 @@ function App() {
   const [projectType, setProjectType] = useState('Custom Business Website & Lead Engine')
   const [projectGoal, setProjectGoal] = useState('')
 
-  // Smooth GSAP Cursor Follower
+  // Smooth GSAP Cursor Follower (Desktop fine pointer only)
   useEffect(() => {
     const cursorEl = cursorRef.current
     if (!cursorEl) return
+    const isFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches
+    if (!isFinePointer) return
 
     const xTo = gsap.quickTo(cursorEl, 'x', { duration: 0.16, ease: 'power3.out' })
     const yTo = gsap.quickTo(cursorEl, 'y', { duration: 0.16, ease: 'power3.out' })
@@ -387,71 +390,73 @@ function App() {
         }
       )
 
-      // Magnetic Buttons Interaction (.gsap-magnetic)
-      const magneticBtns = document.querySelectorAll('.gsap-magnetic')
-      magneticBtns.forEach((btn) => {
-        const onMove = (e) => {
-          const rect = btn.getBoundingClientRect()
-          const relX = e.clientX - (rect.left + rect.width / 2)
-          const relY = e.clientY - (rect.top + rect.height / 2)
-          gsap.to(btn, {
-            x: relX * 0.24,
-            y: relY * 0.24,
-            duration: 0.25,
-            ease: 'power2.out'
+      // Magnetic Buttons & 3D Perspective Tilt Cards (Fine pointer / desktop only)
+      const isFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches
+      if (isFinePointer) {
+        const magneticBtns = document.querySelectorAll('.gsap-magnetic')
+        magneticBtns.forEach((btn) => {
+          const onMove = (e) => {
+            const rect = btn.getBoundingClientRect()
+            const relX = e.clientX - (rect.left + rect.width / 2)
+            const relY = e.clientY - (rect.top + rect.height / 2)
+            gsap.to(btn, {
+              x: relX * 0.24,
+              y: relY * 0.24,
+              duration: 0.25,
+              ease: 'power2.out'
+            })
+          }
+          const onLeave = () => {
+            gsap.to(btn, {
+              x: 0,
+              y: 0,
+              duration: 0.6,
+              ease: 'elastic.out(1, 0.35)'
+            })
+          }
+          btn.addEventListener('mousemove', onMove)
+          btn.addEventListener('mouseleave', onLeave)
+          cleanupListeners.push(() => {
+            btn.removeEventListener('mousemove', onMove)
+            btn.removeEventListener('mouseleave', onLeave)
           })
-        }
-        const onLeave = () => {
-          gsap.to(btn, {
-            x: 0,
-            y: 0,
-            duration: 0.6,
-            ease: 'elastic.out(1, 0.35)'
-          })
-        }
-        btn.addEventListener('mousemove', onMove)
-        btn.addEventListener('mouseleave', onLeave)
-        cleanupListeners.push(() => {
-          btn.removeEventListener('mousemove', onMove)
-          btn.removeEventListener('mouseleave', onLeave)
         })
-      })
 
-      // 3D Perspective Tilt Cards (.gsap-tilt-card)
-      const tiltCards = document.querySelectorAll('.gsap-tilt-card')
-      tiltCards.forEach((card) => {
-        const onMove = (e) => {
-          const rect = card.getBoundingClientRect()
-          const x = e.clientX - rect.left
-          const y = e.clientY - rect.top
-          const centerX = rect.width / 2
-          const centerY = rect.height / 2
-          const rotateX = ((y - centerY) / centerY) * -4.5
-          const rotateY = ((x - centerX) / centerX) * 4.5
+        const tiltCards = document.querySelectorAll('.gsap-tilt-card')
+        tiltCards.forEach((card) => {
+          const onMove = (e) => {
+            const rect = card.getBoundingClientRect()
+            const x = e.clientX - rect.left
+            const y = e.clientY - rect.top
+            const centerX = rect.width / 2
+            const centerY = rect.height / 2
+            const rotateX = ((y - centerY) / centerY) * -4.5
+            const rotateY = ((x - centerX) / centerX) * 4.5
 
-          gsap.to(card, {
-            rotationX: rotateX,
-            rotationY: rotateY,
-            transformPerspective: 1100,
-            duration: 0.35,
-            ease: 'power2.out'
+            gsap.to(card, {
+              rotationX: rotateX,
+              rotationY: rotateY,
+              transformPerspective: 1100,
+              duration: 0.35,
+              ease: 'power2.out'
+            })
+          }
+          const onLeave = () => {
+            gsap.to(card, {
+              rotationX: 0,
+              rotationY: 0,
+              duration: 0.65,
+              ease: 'power3.out'
+            })
+          }
+          card.addEventListener('mousemove', onMove)
+          card.addEventListener('mouseleave', onLeave)
+          cleanupListeners.push(() => {
+            card.removeEventListener('mousemove', onMove)
+            card.removeEventListener('mouseleave', onLeave)
           })
-        }
-        const onLeave = () => {
-          gsap.to(card, {
-            rotationX: 0,
-            rotationY: 0,
-            duration: 0.65,
-            ease: 'power3.out'
-          })
-        }
-        card.addEventListener('mousemove', onMove)
-        card.addEventListener('mouseleave', onLeave)
-        cleanupListeners.push(() => {
-          card.removeEventListener('mousemove', onMove)
-          card.removeEventListener('mouseleave', onLeave)
         })
-      })
+      }
     }, siteRef)
 
     return () => {
@@ -464,12 +469,14 @@ function App() {
     setSelectedProject(project)
     setActiveView('case-study')
     setCursorVisible(false)
+    setMobileMenuOpen(false)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const navigateTo = (view, sectionId = null) => {
     setActiveView(view)
     setSelectedProject(null)
+    setMobileMenuOpen(false)
     if (sectionId) {
       setTimeout(() => {
         const el = document.getElementById(sectionId)
@@ -561,16 +568,7 @@ function App() {
             className="lightbox-img"
             onClick={(e) => e.stopPropagation()}
           />
-          <div
-            style={{
-              marginTop: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '20px',
-              color: '#ffffff',
-              fontSize: '13.5px'
-            }}
-          >
+          <div className="lightbox-caption-bar">
             <span>{lightboxImage.caption}</span>
             <button className="framer-btn" onClick={() => setLightboxImage(null)}>
               Close [ESC]
@@ -582,59 +580,166 @@ function App() {
       {/* Sticky Top Architectural Navigation Bar */}
       <header className="top-nav-section">
         <div className="top-nav-rail">
-          <div className="nav-brand" onClick={() => navigateTo('home')}>
-            <span className="status-dot" />
-            <span>HITARTH PAREEK</span>
+          <div className="top-nav-main-row">
+            <div className="nav-brand" onClick={() => navigateTo('home')}>
+              <span className="status-dot" />
+              <span>HITARTH PAREEK</span>
+            </div>
+
+            <nav className="nav-links" aria-label="Primary Navigation">
+              <button
+                className={`nav-link-btn ${activeView === 'home' ? 'active' : ''}`}
+                onClick={() => navigateTo('home', 'why-website')}
+              >
+                Why a Website?
+              </button>
+              <button
+                className={`nav-link-btn ${activeView === 'projects' ? 'active' : ''}`}
+                onClick={() => navigateTo('home', 'featured-work')}
+              >
+                Work [{projects.length}]
+              </button>
+              <button
+                className="nav-link-btn"
+                onClick={() => navigateTo('home', 'process-section')}
+              >
+                Process
+              </button>
+              <button
+                className="nav-link-btn"
+                onClick={() => navigateTo('home', 'experience-section')}
+              >
+                Experience
+              </button>
+              <button
+                className="nav-link-btn"
+                onClick={() => navigateTo('home', 'about-section')}
+              >
+                About
+              </button>
+            </nav>
+
+            <div className="nav-actions">
+              <a
+                href={`tel:${developerInfo.phone}`}
+                className="phone-highlight-pill nav-phone-desktop gsap-magnetic"
+                title="Call Hitarth Directly"
+              >
+                <span>📞 {developerInfo.phone}</span>
+              </a>
+              <button
+                className="framer-btn framer-btn-primary nav-cta-desktop gsap-magnetic"
+                onClick={() => navigateTo('home', 'contact-footer')}
+              >
+                Let&apos;s Talk ↗
+              </button>
+
+              {/* Mobile Call Quick Button + Hamburger Menu Toggle */}
+              <a
+                href={`tel:${developerInfo.phone}`}
+                className="phone-highlight-pill nav-phone-mobile"
+                title="Call Hitarth Directly"
+              >
+                <span>📞 Call</span>
+              </a>
+              <button
+                type="button"
+                className={`mobile-menu-toggle ${mobileMenuOpen ? 'open' : ''}`}
+                onClick={() => setMobileMenuOpen((prev) => !prev)}
+                aria-expanded={mobileMenuOpen}
+                aria-label="Toggle navigation menu"
+              >
+                <span className="hamburger-box">
+                  <span className="hamburger-line" />
+                  <span className="hamburger-line" />
+                </span>
+                <span className="mobile-menu-label">{mobileMenuOpen ? 'CLOSE' : 'MENU'}</span>
+              </button>
+            </div>
           </div>
 
-          <nav className="nav-links">
-            <button
-              className={`nav-link-btn ${activeView === 'home' ? 'active' : ''}`}
-              onClick={() => navigateTo('home', 'why-website')}
-            >
-              Why a Website?
-            </button>
-            <button
-              className={`nav-link-btn ${activeView === 'projects' ? 'active' : ''}`}
-              onClick={() => navigateTo('home', 'featured-work')}
-            >
-              Work [{projects.length}]
-            </button>
-            <button
-              className="nav-link-btn"
-              onClick={() => navigateTo('home', 'process-section')}
-            >
-              Process
-            </button>
-            <button
-              className="nav-link-btn"
-              onClick={() => navigateTo('home', 'experience-section')}
-            >
-              Experience
-            </button>
-            <button
-              className="nav-link-btn"
-              onClick={() => navigateTo('home', 'about-section')}
-            >
-              About
-            </button>
-          </nav>
+          {/* Collapsible Mobile & Tablet Navigation Drawer */}
+          {mobileMenuOpen && (
+            <div className="mobile-nav-drawer">
+              <div className="mobile-nav-links">
+                <button
+                  className="mobile-nav-item"
+                  onClick={() => navigateTo('home', 'why-website')}
+                >
+                  <span>Why Your Business Needs a Website</span>
+                  <span className="framer-mono-tag">[01]</span>
+                </button>
+                <button
+                  className="mobile-nav-item"
+                  onClick={() => navigateTo('home', 'featured-work')}
+                >
+                  <span>Featured Work &amp; Case Studies [{projects.length}]</span>
+                  <span className="framer-mono-tag">[02]</span>
+                </button>
+                <button
+                  className="mobile-nav-item"
+                  onClick={() => navigateTo('projects')}
+                >
+                  <span>All Projects Archive</span>
+                  <span className="framer-mono-tag">[ARCHIVE]</span>
+                </button>
+                <button
+                  className="mobile-nav-item"
+                  onClick={() => navigateTo('home', 'process-section')}
+                >
+                  <span>4-Step Launch Process</span>
+                  <span className="framer-mono-tag">[03]</span>
+                </button>
+                <button
+                  className="mobile-nav-item"
+                  onClick={() => navigateTo('home', 'services-section')}
+                >
+                  <span>Services &amp; Expertise</span>
+                  <span className="framer-mono-tag">[04]</span>
+                </button>
+                <button
+                  className="mobile-nav-item"
+                  onClick={() => navigateTo('home', 'experience-section')}
+                >
+                  <span>Industry Experience &amp; Skills</span>
+                  <span className="framer-mono-tag">[05]</span>
+                </button>
+                <button
+                  className="mobile-nav-item"
+                  onClick={() => navigateTo('home', 'about-section')}
+                >
+                  <span>About Hitarth Pareek</span>
+                  <span className="framer-mono-tag">[06]</span>
+                </button>
+              </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <a
-              href={`tel:${developerInfo.phone}`}
-              className="phone-highlight-pill gsap-magnetic"
-              title="Call Hitarth Directly"
-            >
-              <span>📞 {developerInfo.phone}</span>
-            </a>
-            <button
-              className="framer-btn framer-btn-primary gsap-magnetic"
-              onClick={() => navigateTo('home', 'contact-footer')}
-            >
-              Let&apos;s Talk ↗
-            </button>
-          </div>
+              <div className="mobile-nav-cta-stack">
+                <a
+                  href={`tel:${developerInfo.phone}`}
+                  className="phone-highlight-hero"
+                  style={{ width: '100%', justifyContent: 'center' }}
+                >
+                  📞 Call Direct: {developerInfo.phone}
+                </a>
+                <a
+                  href={`https://wa.me/${developerInfo.whatsappNumber}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="framer-btn"
+                  style={{ width: '100%', justifyContent: 'center' }}
+                >
+                  💬 WhatsApp Direct ↗
+                </a>
+                <button
+                  className="framer-btn framer-btn-primary"
+                  style={{ width: '100%', justifyContent: 'center' }}
+                  onClick={() => navigateTo('home', 'contact-footer')}
+                >
+                  Request Custom Proposal ↗
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </header>
 
@@ -1300,7 +1405,7 @@ function App() {
                           <div className="project-card-index-group">
                             <span className="framer-mono-tag">{project.index}</span>
                             <span className="framer-body-small">{project.year}</span>
-                            <span className="framer-mono-tag">· {project.industry}</span>
+                            <span className="framer-mono-tag project-industry-tag">· {project.industry}</span>
                           </div>
 
                           {project.secondaryImage && (
@@ -1687,7 +1792,7 @@ function App() {
                 </a>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <div className="phone-spotlight-actions">
               <a
                 href={`tel:${developerInfo.phone}`}
                 className="framer-btn framer-btn-primary gsap-magnetic"
@@ -1772,15 +1877,7 @@ function App() {
 
             {/* Right Column: Instant Client Project Brief Generator */}
             <form className="proposal-form-card" onSubmit={handleSendWhatsAppProposal}>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  borderBottom: '1px solid var(--border-hairline)',
-                  paddingBottom: '12px'
-                }}
-              >
+              <div className="proposal-form-header">
                 <span className="framer-body-small">INSTANT PROJECT BRIEF &amp; ESTIMATE</span>
                 <span className="framer-mono-tag" style={{ color: 'var(--accent-emerald)' }}>
                   ● Replies within 2 hours
@@ -1849,7 +1946,7 @@ function App() {
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+              <div className="proposal-submit-row">
                 <button
                   type="submit"
                   className="framer-btn framer-btn-primary gsap-magnetic"
